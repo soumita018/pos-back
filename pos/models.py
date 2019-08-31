@@ -31,13 +31,24 @@ class MyUserManager(BaseUserManager):
 
 USER_TYPE = (('Admin','Admin'),('Stuff','Stuff'))
 ORDER_STATUS_CHOICES = (('Order Received','Order Received'),('Processing','Processing'),('Delivered','Delivered'))
-class Category(models.Model):
+
+class Restaurant(models.Model):
     name = models.CharField(max_length=200,blank=True,null=True)
+    address = models.CharField(max_length=200,blank=True,null=True)
+
+    def __str__(self):
+        return self.name
+
+class Category(models.Model):
+    resturant = models.ForeignKey(Restaurant,blank=True,null=True,on_delete=models.CASCADE)
+    name = models.CharField(max_length=200,blank=True,null=True)
+    
 
     def __str__(self):
         return self.name
 
 class SubCategory(models.Model):
+    resturant = models.ForeignKey(Restaurant,blank=True,null=True,on_delete=models.CASCADE)
     cat_name = models.ForeignKey(Category,on_delete=models.CASCADE,blank=True,null=True)
     name = models.CharField(max_length=200,blank=True,null=True)
 
@@ -45,6 +56,7 @@ class SubCategory(models.Model):
         return self.name
 
 class Product(models.Model):
+    resturant = models.ForeignKey(Restaurant,blank=True,null=True,on_delete=models.CASCADE)
     cat_name = models.ForeignKey(Category,blank=True,null=True,on_delete=models.CASCADE)
     sub_cat_name = models.ForeignKey(SubCategory,blank=True,null=True,on_delete=models.CASCADE)
     name = models.CharField(blank=True,null=True,max_length=200)
@@ -74,15 +86,6 @@ class Product(models.Model):
             return u'No image file found'
 
 
-class Restaurant(models.Model):
-    cat_name = models.ForeignKey(Category,blank=True,null=True,on_delete=models.CASCADE)
-    sub_cat_name = models.ForeignKey(SubCategory,blank=True,null=True,on_delete=models.CASCADE)
-    name = models.CharField(max_length=200,blank=True,null=True)
-    product = models.ManyToManyField(Product,blank=True,null=True)
-    address = models.CharField(max_length=200,blank=True,null=True)
-
-    def __str__(self):
-        return self.name
 
 class User(AbstractBaseUser,PermissionsMixin):
     resturant = models.ForeignKey(Restaurant,blank=True,null=True,on_delete=models.CASCADE)
@@ -115,8 +118,8 @@ class Customer(models.Model):
 
 
 class Order(models.Model):
-    customer = models.OneToOneField(Customer,blank=True,null=True,on_delete=models.CASCADE)
-    resturant = models.OneToOneField(Restaurant,blank=True,null=True,on_delete=models.CASCADE)
+    customer = models.ForeignKey(Customer,blank=True,null=True,on_delete=models.CASCADE)
+    resturant = models.ForeignKey(Restaurant,blank=True,null=True,on_delete=models.CASCADE)
     order_total = models.IntegerField(blank=True,null=True)
     created = models.DateTimeField(auto_now_add=True)
     status =  models.CharField(max_length=160,default='Order Received',choices=ORDER_STATUS_CHOICES)
@@ -125,7 +128,7 @@ class Order(models.Model):
         return self.customer.name
 
 class OrderItem(models.Model):
-    orderitem = models.ForeignKey(Order,blank=True,null=True,on_delete=models.CASCADE)
+    order = models.ForeignKey(Order,blank=True,null=True,on_delete=models.CASCADE)
     product = models.ForeignKey(Product,blank=True,null=True,on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=10, decimal_places=2,blank=True,null=True)
     quantity = models.PositiveIntegerField(default=1)
