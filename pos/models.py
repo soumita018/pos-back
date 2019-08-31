@@ -31,35 +31,6 @@ class MyUserManager(BaseUserManager):
 
 USER_TYPE = (('Admin','Admin'),('Stuff','Stuff'))
 ORDER_STATUS_CHOICES = (('Order Received','Order Received'),('Processing','Processing'),('Delivered','Delivered'))
-
-    
-class User(AbstractBaseUser,PermissionsMixin):
-    name = models.CharField(blank=True,null=True,max_length=200)
-    phone_regex = RegexValidator(regex=r'^[0-9]{10}$', message="Phone number must be 10 digits and entered in the format: '9775876662'.")
-    phone = models.CharField(validators=[phone_regex],blank=True,null=True, max_length=10,unique=True)
-    email = models.EmailField(verbose_name='email address',max_length=255,unique=True)
-   
-    is_active = models.BooleanField(default=True)
-    is_admin = models.BooleanField(default=False)
-    is_staff = models.BooleanField(default=True)
-    user_type = models.CharField(default='Stuff',max_length=100,choices=USER_TYPE,verbose_name=u"User Type")
-
-    objects = MyUserManager()
-
-    USERNAME_FIELD = 'phone'
-    REQUIRED_FIELDS = ['name','email']
-
-    def __str__(self):
-        return self.phone
-
-class Customer(models.Model):
-    name = models.CharField(max_length=300,blank=True,null=True)
-    phone_regex = RegexValidator(regex=r'^[0-9]{10}$', message="Phone number must be 10 digits and entered in the format: '9775876662'.")
-    phone = models.CharField(validators=[phone_regex],blank=True,null=True, max_length=10,unique=True)
-
-    def __str__(self):
-        return self.name
-    
 class Category(models.Model):
     name = models.CharField(max_length=200,blank=True,null=True)
 
@@ -72,7 +43,6 @@ class SubCategory(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class Product(models.Model):
     cat_name = models.ForeignKey(Category,blank=True,null=True,on_delete=models.CASCADE)
@@ -103,14 +73,45 @@ class Product(models.Model):
         else:
             return u'No image file found'
 
+
 class Restaurant(models.Model):
-    user = models.ForeignKey(User,blank=True,null=True,on_delete=models.CASCADE)
+    cat_name = models.ForeignKey(Category,blank=True,null=True,on_delete=models.CASCADE)
+    sub_cat_name = models.ForeignKey(SubCategory,blank=True,null=True,on_delete=models.CASCADE)
     name = models.CharField(max_length=200,blank=True,null=True)
     product = models.ManyToManyField(Product,blank=True,null=True)
     address = models.CharField(max_length=200,blank=True,null=True)
 
     def __str__(self):
         return self.name
+
+class User(AbstractBaseUser,PermissionsMixin):
+    resturant = models.ForeignKey(Restaurant,blank=True,null=True,on_delete=models.CASCADE)
+    name = models.CharField(blank=True,null=True,max_length=200)
+    phone_regex = RegexValidator(regex=r'^[0-9]{10}$', message="Phone number must be 10 digits and entered in the format: '9775876662'.")
+    phone = models.CharField(validators=[phone_regex],blank=True,null=True, max_length=10,unique=True)
+    email = models.EmailField(verbose_name='email address',max_length=255,unique=True)
+   
+    is_active = models.BooleanField(default=True)
+    is_admin = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=True)
+    user_type = models.CharField(default='Stuff',max_length=100,choices=USER_TYPE,verbose_name=u"User Type")
+
+    objects = MyUserManager()
+
+    USERNAME_FIELD = 'phone'
+    REQUIRED_FIELDS = ['name','email']
+
+    def __str__(self):
+        return self.phone
+
+class Customer(models.Model):
+    name = models.CharField(max_length=300,blank=True,null=True)
+    phone_regex = RegexValidator(regex=r'^[0-9]{10}$', message="Phone number must be 10 digits and entered in the format: '9775876662'.")
+    phone = models.CharField(validators=[phone_regex],blank=True,null=True, max_length=10,unique=True)
+
+    def __str__(self):
+        return self.name
+    
 
 
 class Order(models.Model):
