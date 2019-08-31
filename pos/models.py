@@ -40,7 +40,7 @@ class Restaurant(models.Model):
         return self.name
 
 class Category(models.Model):
-    resturant = models.ForeignKey(Restaurant,blank=True,null=True,on_delete=models.CASCADE)
+    
     name = models.CharField(max_length=200,blank=True,null=True)
     
 
@@ -48,7 +48,7 @@ class Category(models.Model):
         return self.name
 
 class SubCategory(models.Model):
-    resturant = models.ForeignKey(Restaurant,blank=True,null=True,on_delete=models.CASCADE)
+    
     cat_name = models.ForeignKey(Category,on_delete=models.CASCADE,blank=True,null=True)
     name = models.CharField(max_length=200,blank=True,null=True)
 
